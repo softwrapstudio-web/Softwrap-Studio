@@ -82,9 +82,12 @@ export const AgHeroSlider = ({ slides }) => {
 
 export const AgNavbar = () => (
     <nav className="ag-navbar">
-        <AgContainer>
+        <AgContainer className="ag-container--fluid">
             <div className="ag-navbar-inner">
-                <a href="/" className="ag-logo">Softwrap Studio</a>
+                <a href="/" className="ag-logo">
+                    <img src="/logo.jpg" alt="Softwrap Studio Logo" className="ag-logo-img" />
+                    Softwrap Studio
+                </a>
                 <ul className="ag-nav-links">
                     <li><a href="/" className="ag-nav-link">Home</a></li>
                     <li><a href="#valentine" className="ag-nav-link">Valentine's Love</a></li>
@@ -116,7 +119,7 @@ export const AgFooter = () => (
         <AgContainer>
             <div className="ag-footer-inner">
                 <div className="ag-footer-info">
-                    <span className="ag-footer-brand">Bold Petals</span>
+                    <span className="ag-footer-brand">Softwrap Studio</span>
                     <span>&copy; 2026. All rights reserved.</span>
                 </div>
                 <div className="ag-footer-notes">

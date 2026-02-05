@@ -61,6 +61,11 @@ h6 {
   padding: 0 2rem;
 }
 
+.ag-container--fluid {
+  max-width: 100%;
+  padding: 0 4rem;
+}
+
 /* Alert Bar */
 .ag-alert-bar {
   background-color: var(--primary-soft);
@@ -98,6 +103,15 @@ h6 {
   font-weight: 800;
   color: var(--primary-romantic);
   text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.ag-logo-img {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
 }
 
 .ag-nav-links {
@@ -311,18 +325,19 @@ h6 {
 
 /* Product Card */
 .ag-card {
-  background: white;
+  background: var(--primary-soft);
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   display: flex;
   flex-direction: column;
 }
 
 .ag-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+  transform: translateY(-10px) scale(1.02);
+  box-shadow: 0 15px 40px rgba(225, 29, 72, 0.2), 0 0 20px rgba(225, 29, 72, 0.1);
+  background: white;
 }
 
 .ag-card-image-box {
