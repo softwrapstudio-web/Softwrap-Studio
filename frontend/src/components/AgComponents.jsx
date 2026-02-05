@@ -36,11 +36,55 @@ export const AgCard = ({ image, name, price, onAddToCart }) => (
     </div>
 );
 
+export const AgHeroSlider = ({ slides }) => {
+    const [current, setCurrent] = React.useState(0);
+
+    React.useEffect(() => {
+        const timer = setInterval(() => {
+            setCurrent((prev) => (prev + 1) % slides.length);
+        }, 5000); // Swap every 5 seconds
+        return () => clearInterval(timer);
+    }, [slides.length]);
+
+    return (
+        <section className="ag-hero-slider">
+            {slides.map((slide, index) => (
+                <div
+                    key={slide.id}
+                    className={`ag-slide ${index === current ? 'ag-slide--active' : ''}`}
+                    style={{ backgroundImage: `url(${slide.image})` }}
+                >
+                    <div className="ag-hero-overlay"></div>
+                    <AgContainer>
+                        <div className="ag-hero-content">
+                            <h1 className="ag-hero-headline">{slide.headline}</h1>
+                            <p className="ag-hero-subheadline">{slide.subheadline}</p>
+                            <AgButton variant="primary" className="hero-btn">
+                                {slide.ctaText} →
+                            </AgButton>
+                        </div>
+                    </AgContainer>
+                </div>
+            ))}
+            <div className="ag-slider-dots">
+                {slides.map((_, index) => (
+                    <button
+                        key={index}
+                        className={`ag-slider-dot ${index === current ? 'ag-slider-dot--active' : ''}`}
+                        onClick={() => setCurrent(index)}
+                        aria-label={`Go to slide ${index + 1}`}
+                    />
+                ))}
+            </div>
+        </section>
+    );
+};
+
 export const AgNavbar = () => (
     <nav className="ag-navbar">
         <AgContainer>
             <div className="ag-navbar-inner">
-                <a href="/" className="ag-logo">Bold Petals</a>
+                <a href="/" className="ag-logo">Softwrap Studio</a>
                 <ul className="ag-nav-links">
                     <li><a href="/" className="ag-nav-link">Home</a></li>
                     <li><a href="#valentine" className="ag-nav-link">Valentine's Love</a></li>
