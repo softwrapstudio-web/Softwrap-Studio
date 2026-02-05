@@ -61,6 +61,11 @@ h6 {
   padding: 0 2rem;
 }
 
+.ag-container--fluid {
+  max-width: 100%;
+  padding: 0 4rem;
+}
+
 /* Alert Bar */
 .ag-alert-bar {
   background-color: var(--primary-soft);
@@ -98,6 +103,15 @@ h6 {
   font-weight: 800;
   color: var(--primary-romantic);
   text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.ag-logo-img {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
 }
 
 .ag-nav-links {
@@ -134,18 +148,34 @@ h6 {
   color: var(--primary-romantic);
 }
 
-/* Hero Section */
-.ag-hero {
+/* Hero Slider */
+.ag-hero-slider {
   position: relative;
   height: 80vh;
   min-height: 600px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   overflow: hidden;
+  background-color: #000;
+}
+
+.ag-slide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 1s ease-in-out;
   background-size: cover;
   background-position: center;
-  /* Background image will be set inline for placeholder */
+  display: flex;
+  align-items: center;
+  visibility: hidden;
+}
+
+.ag-slide--active {
+  opacity: 1;
+  z-index: 1;
+  visibility: visible;
 }
 
 .ag-hero-overlay {
@@ -154,29 +184,64 @@ h6 {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(to right, rgba(0, 0, 0, 0.4), transparent);
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.5), transparent);
+  z-index: 2;
 }
 
 .ag-hero-content {
   position: relative;
-  z-index: 1;
+  z-index: 3;
   max-width: 600px;
-  margin-left: 0;
-  /* Align left */
   color: white;
+  transform: translateY(20px);
+  transition: transform 0.8s ease-out, opacity 0.8s ease-out;
+  opacity: 0;
+}
+
+.ag-slide--active .ag-hero-content {
+  transform: translateY(0);
+  opacity: 1;
 }
 
 .ag-hero-headline {
   font-size: 4rem;
   line-height: 1.1;
   margin-bottom: 1.5rem;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
 
 .ag-hero-subheadline {
   font-size: 1.25rem;
   margin-bottom: 2.5rem;
   opacity: 0.9;
+}
+
+/* Slider Pagination */
+.ag-slider-dots {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 1rem;
+  z-index: 10;
+}
+
+.ag-slider-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  transition: all 0.3s;
+  border: 2px solid transparent;
+  padding: 0;
+}
+
+.ag-slider-dot--active {
+  background-color: var(--primary-romantic);
+  transform: scale(1.2);
+  border-color: white;
 }
 
 /* Buttons */
@@ -260,18 +325,19 @@ h6 {
 
 /* Product Card */
 .ag-card {
-  background: white;
+  background: var(--primary-soft);
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   display: flex;
   flex-direction: column;
 }
 
 .ag-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+  transform: translateY(-10px) scale(1.02);
+  box-shadow: 0 15px 40px rgba(225, 29, 72, 0.2), 0 0 20px rgba(225, 29, 72, 0.1);
+  background: white;
 }
 
 .ag-card-image-box {

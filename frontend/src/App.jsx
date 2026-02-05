@@ -1,5 +1,5 @@
 import React from 'react';
-import { AgContainer, AgSection, AgButton, AgNavbar, AgAlertBar, AgFooter } from './components/AgComponents';
+import { AgContainer, AgSection, AgButton, AgNavbar, AgAlertBar, AgFooter, AgHeroSlider } from './components/AgComponents';
 import { ProductGrid } from './components/ProductGrid';
 import './index.css';
 
@@ -39,25 +39,45 @@ const JHUMKAS = [
   { name: "Antique Gold Jhumka", price: "850.00", image: null },
 ];
 
+const HERO_SLIDES = [
+  {
+    id: 1,
+    image: 'https://images.unsplash.com/photo-1549465220-1d8c9d9c4701?auto=format&fit=crop&q=80&w=2000',
+    headline: 'Express Your Love',
+    subheadline: 'Curated Valentine\'s Hampers & Thoughtful Gifts',
+    ctaText: 'Shop the Valentine\'s Collection'
+  },
+  {
+    id: 2,
+    image: 'https://images.unsplash.com/photo-1512909006721-3d6018887383?auto=format&fit=crop&q=80&w=2000',
+    headline: 'Artisanal Packaging',
+    subheadline: 'Elegant gift wraps and personalized boxes for every occasion.',
+    ctaText: 'Explore Packaging'
+  },
+  {
+    id: 3,
+    image: 'https://images.unsplash.com/photo-1513201099705-a9746e1e201f?auto=format&fit=crop&q=80&w=2000',
+    headline: 'Perfect Gifting Ideas',
+    subheadline: 'Find unique gifts for your loved ones, handpicked with care.',
+    ctaText: 'View Gift Ideas'
+  },
+  {
+    id: 4,
+    image: 'https://images.unsplash.com/photo-1543332164-6e82f355518b?auto=format&fit=crop&q=80&w=2000',
+    headline: 'The Alpha Collection',
+    subheadline: 'Exclusive premium gifts designed for him.',
+    ctaText: 'Shop for Him'
+  }
+];
+
 function App() {
   return (
     <div className="bold-petals-site">
       <AgAlertBar text="🎁 Free shipping on all orders above Rs. 999!" />
       <AgNavbar />
 
-      {/* Hero Section */}
-      <section className="ag-hero" style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1549465220-1d8c9d9c4701?auto=format&fit=crop&q=80&w=2000)' }}>
-        <div className="ag-hero-overlay"></div>
-        <AgContainer>
-          <div className="ag-hero-content">
-            <h1 className="ag-hero-headline">Express Your Love</h1>
-            <p className="ag-hero-subheadline">Curated Valentine's Hampers & Thoughtful Gifts</p>
-            <AgButton variant="primary" className="hero-btn">
-              Shop the Valentine's Collection →
-            </AgButton>
-          </div>
-        </AgContainer>
-      </section>
+      {/* Hero Section Slider */}
+      <AgHeroSlider slides={HERO_SLIDES} />
 
       {/* Main Content Sections */}
       <AgSection title="Valentine's Love" id="valentine">
