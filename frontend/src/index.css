@@ -1,0 +1,228 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap');
+
+:root {
+  --bg-color: #fff9fb;
+  --primary-color: #ff4d6d;
+  --primary-hover: #ff758f;
+  --secondary-color: #ffb3c1;
+  --accent-color: #ffbe0b;
+  --text-color: #590d22;
+  --text-muted: #8c2f39;
+  --card-bg: #ffffff;
+  --border-color: #ffe5ec;
+  --container-width: 1200px;
+  --font-body: 'Inter', sans-serif;
+  --font-display: 'Playfair Display', serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  line-height: 1.6;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+}
+
+.ag-container {
+  max-width: var(--container-width);
+  margin: 0 auto;
+  padding: 0 40px;
+}
+
+.ag-section {
+  padding: 100px 0;
+}
+
+.ag-section-title {
+  text-align: center;
+  font-size: 3rem;
+  margin-bottom: 60px;
+  color: var(--text-color);
+  position: relative;
+}
+
+.ag-section-title::after {
+  content: '';
+  display: block;
+  width: 80px;
+  height: 3px;
+  background-color: var(--primary-color);
+  margin: 20px auto 0;
+  border-radius: 2px;
+}
+
+/* Button */
+.ag-button {
+  padding: 14px 32px;
+  border-radius: 50px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: var(--font-body);
+  display: inline-block;
+  text-decoration: none;
+  font-size: 1rem;
+}
+
+.ag-button-primary {
+  background-color: var(--primary-color);
+  color: white;
+  box-shadow: 0 4px 15px rgba(255, 77, 109, 0.3);
+}
+
+.ag-button-primary:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(255, 77, 109, 0.4);
+}
+
+/* Card */
+.ag-card {
+  background: var(--card-bg);
+  border-radius: 24px;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-shadow: 0 10px 30px rgba(89, 13, 34, 0.03);
+}
+
+.ag-card:hover {
+  transform: translateY(-12px);
+  box-shadow: 0 25px 50px rgba(89, 13, 34, 0.1);
+}
+
+.ag-card-image {
+  height: 280px;
+  background: radial-gradient(circle at center, #fff0f3 0%, #ffe5ec 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.ag-image-placeholder {
+  color: var(--primary-color);
+  font-weight: 600;
+  text-align: center;
+  padding: 20px;
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  opacity: 0.6;
+}
+
+.ag-card-content {
+  padding: 30px;
+  text-align: center;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.ag-card-name {
+  font-size: 1.4rem;
+  margin-bottom: 12px;
+  color: var(--text-color);
+}
+
+.ag-card-price {
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-bottom: 25px;
+  font-size: 1.1rem;
+}
+
+.ag-card-button {
+  width: 100%;
+  margin-top: auto;
+}
+
+/* Banner */
+.top-banner {
+  background-color: var(--accent-color);
+  color: #000;
+  text-align: center;
+  padding: 12px 0;
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+/* Hero */
+.hero {
+  background: radial-gradient(circle at top right, #fff0f3, transparent 70%),
+    radial-gradient(circle at bottom left, #fff0f3, transparent 70%);
+  text-align: center;
+  padding: 140px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.hero-title {
+  font-size: 5.5rem;
+  color: var(--primary-color);
+  margin-bottom: 25px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.hero-subtitle {
+  font-size: 1.4rem;
+  color: var(--text-muted);
+  max-width: 700px;
+  margin: 0 auto 50px;
+  font-weight: 400;
+}
+
+/* Product Grid */
+.product-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 40px;
+  width: 100%;
+}
+
+/* Story */
+.story-section {
+  background-color: #fffaf0;
+  /* Warm off-white */
+}
+
+.story-content {
+  max-width: 900px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.story-text {
+  font-size: 1.5rem;
+  font-style: italic;
+  font-family: var(--font-display);
+  color: var(--text-muted);
+  line-height: 2;
+}
+
+/* Footer */
+footer {
+  text-align: center;
+  padding: 60px 20px;
+  color: #8c2f39;
+  background-color: #fff0f3;
+  font-weight: 500;
+}
