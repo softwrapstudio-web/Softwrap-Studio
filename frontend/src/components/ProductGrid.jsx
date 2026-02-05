@@ -39,7 +39,7 @@ export const ProductGrid = ({ products }) => {
     // Actually, let's just use ag-Grid as the engine for the "grid" logic.
 
     return (
-        <div className="product-row">
+        <div className="ag-grid">
             {products.map((product, index) => (
                 <AgCard
                     key={index}
