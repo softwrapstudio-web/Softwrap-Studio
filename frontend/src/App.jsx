@@ -1,6 +1,9 @@
 import React from 'react';
-import { AgContainer, AgSection, AgButton, AgNavbar, AgAlertBar, AgFooter, AgHeroSlider } from './components/AgComponents';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { AgSection, AgNavbar, AgAlertBar, AgFooter, AgHeroSlider } from './components/AgComponents';
 import { ProductGrid } from './components/ProductGrid';
+import LoginPage from './pages/LoginPage';
+import SignUpPage from './pages/SignUpPage';
 import './index.css';
 
 const VALENTINE_LOVE = [
@@ -70,60 +73,62 @@ const HERO_SLIDES = [
   }
 ];
 
+const HomePage = () => (
+  <>
+    <AgHeroSlider slides={HERO_SLIDES} />
+    <AgSection title="Valentine's Love" id="valentine">
+      <ProductGrid products={VALENTINE_LOVE} />
+    </AgSection>
+    <AgSection title="Custom Packaging" id="customize">
+      <ProductGrid products={CUSTOM_PACKAGING} />
+    </AgSection>
+    <AgSection title="Gifting Ideas" id="gifting">
+      <ProductGrid products={GIFTING_IDEAS} />
+    </AgSection>
+    <AgSection title="Makeup/Chocolate/more" id="makeup">
+      <ProductGrid products={MAKEUP_CHOCOLATE} />
+    </AgSection>
+    <AgSection title="The Alpha (for boyfriend)" id="alpha">
+      <ProductGrid products={THE_ALPHA} />
+    </AgSection>
+    <AgSection title="Jhumkas" id="jhumkas">
+      <ProductGrid products={JHUMKAS} />
+    </AgSection>
+    <AgSection title="Our Story" className="story-section" id="story">
+      <div className="ag-story">
+        <img
+          src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=400"
+          alt="Founder"
+          className="ag-story-avatar"
+        />
+        <div className="ag-story-content">
+          <p className="ag-story-text">
+            "It all started with a simple dream: to make every gift feel as personal as a handwritten letter.
+            Founded by Shreya, we believe that the beauty of a gift lies in the thought and the presentation.
+            Our passion for craftsmanship and romance drives every hamper we create, ensuring your loved ones feel truly special."
+          </p>
+        </div>
+      </div>
+    </AgSection>
+  </>
+);
+
 function App() {
   return (
-    <div className="bold-petals-site">
-      <AgAlertBar text="🎁 Free shipping on all orders above Rs. 999!" />
-      <AgNavbar />
+    <Router>
+      <div className="bold-petals-site">
+        <AgAlertBar text="🎁 Free shipping on all orders above Rs. 999!" />
+        <AgNavbar />
 
-      {/* Hero Section Slider */}
-      <AgHeroSlider slides={HERO_SLIDES} />
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignUpPage />} />
+        </Routes>
 
-      {/* Main Content Sections */}
-      <AgSection title="Valentine's Love" id="valentine">
-        <ProductGrid products={VALENTINE_LOVE} />
-      </AgSection>
-
-      <AgSection title="Custom Packaging" id="customize">
-        <ProductGrid products={CUSTOM_PACKAGING} />
-      </AgSection>
-
-      <AgSection title="Gifting Ideas" id="gifting">
-        <ProductGrid products={GIFTING_IDEAS} />
-      </AgSection>
-
-      <AgSection title="Makeup/Chocolate/more" id="makeup">
-        <ProductGrid products={MAKEUP_CHOCOLATE} />
-      </AgSection>
-
-      <AgSection title="The Alpha (for boyfriend)" id="alpha">
-        <ProductGrid products={THE_ALPHA} />
-      </AgSection>
-
-      <AgSection title="Jhumkas" id="jhumkas">
-        <ProductGrid products={JHUMKAS} />
-      </AgSection>
-
-      {/* Brand Story Section */}
-      <AgSection title="Our Story" className="story-section" id="story">
-        <div className="ag-story">
-          <img
-            src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=400"
-            alt="Founder"
-            className="ag-story-avatar"
-          />
-          <div className="ag-story-content">
-            <p className="ag-story-text">
-              "It all started with a simple dream: to make every gift feel as personal as a handwritten letter.
-              Founded by Shreya, we believe that the beauty of a gift lies in the thought and the presentation.
-              Our passion for craftsmanship and romance drives every hamper we create, ensuring your loved ones feel truly special."
-            </p>
-          </div>
-        </div>
-      </AgSection>
-
-      <AgFooter />
-    </div>
+        <AgFooter />
+      </div>
+    </Router>
   );
 }
 

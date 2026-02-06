@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 export const AgContainer = ({ children, className = '' }) => (
     <div className={`ag-container ${className}`}>
@@ -84,21 +85,25 @@ export const AgNavbar = () => (
     <nav className="ag-navbar">
         <AgContainer className="ag-container--fluid">
             <div className="ag-navbar-inner">
-                <a href="/" className="ag-logo">
+                <Link to="/" className="ag-logo">
                     <img src="/logo.jpg" alt="Softwrap Studio Logo" className="ag-logo-img" />
                     Softwrap Studio
-                </a>
+                </Link>
                 <ul className="ag-nav-links">
-                    <li><a href="/" className="ag-nav-link">Home</a></li>
-                    <li><a href="#valentine" className="ag-nav-link">Valentine's Love</a></li>
-                    <li><a href="#gifting" className="ag-nav-link">Gifting Ideas</a></li>
-                    <li><a href="#customize" className="ag-nav-link">Customize</a></li>
-                    <li><a href="#jhumkas" className="ag-nav-link">Jhumkas</a></li>
-                    <li><a href="#story" className="ag-nav-link">Our Story</a></li>
+                    <li><Link to="/" className="ag-nav-link">Home</Link></li>
+                    <li><a href="/#valentine" className="ag-nav-link">Valentine's Love</a></li>
+                    <li><a href="/#gifting" className="ag-nav-link">Gifting Ideas</a></li>
+                    <li><a href="/#customize" className="ag-nav-link">Customize</a></li>
+                    <li><a href="/#jhumkas" className="ag-nav-link">Jhumkas</a></li>
+                    <li><a href="/#story" className="ag-nav-link">Our Story</a></li>
                 </ul>
                 <div className="ag-nav-icons">
                     <span className="ag-nav-icon">🔍</span>
-                    <span className="ag-nav-icon">👤</span>
+                    <Link to="/login" style={{ textDecoration: 'none' }}>
+                        <AgButton variant="outline" className="nav-login-btn" style={{ padding: '0.5rem 1.5rem', fontSize: '0.9rem' }}>
+                            Login
+                        </AgButton>
+                    </Link>
                     <span className="ag-nav-icon">🛒</span>
                 </div>
             </div>
