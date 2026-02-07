@@ -1,0 +1,21 @@
+import { Navigate } from "react-router-dom";
+import { useAuth } from "../utils/useAuth.jsx";
+
+export default function PrivateRoute({ children }) {
+  const { user, loading } = useAuth();
+  
+  if (loading) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh' 
+      }}>
+        Loading...
+      </div>
+    );
+  }
+  
+  return user ? children : <Navigate to="/login" />;
+}
