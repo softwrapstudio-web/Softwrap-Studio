@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../utils/useAuth.jsx';
 import { supabase } from '../utils/supabase';
+import { CartBadge } from './CartBadge';
 
 export const AgContainer = ({ children, className = '' }) => (
     <div className={`ag-container ${className}`}>
@@ -83,6 +84,8 @@ export const AgHeroSlider = ({ slides }) => {
     );
 };
 
+
+
 export const AgNavbar = () => {
     const { user, role } = useAuth();
     const navigate = useNavigate();
@@ -94,7 +97,7 @@ export const AgNavbar = () => {
 
     return (
         <nav className="ag-navbar">
-            <AgContainer className="ag-container--fluid">
+            <div className="ag-container ag-container--fluid">
                 <div className="ag-navbar-inner">
                     <Link to="/" className="ag-logo">
                         <img src="/logo.jpg" alt="Softwrap Studio Logo" className="ag-logo-img" />
@@ -131,30 +134,34 @@ export const AgNavbar = () => {
                         <span className="ag-nav-icon">🔍</span>
                         
                         {user ? (
-                            <AgButton 
-                                variant="outline" 
-                                className="nav-login-btn" 
-                                onClick={handleLogout}
-                                style={{ padding: '0.5rem 1.5rem', fontSize: '0.9rem' }}
-                            >
-                                Logout
-                            </AgButton>
-                        ) : (
-                            <Link to="/login" style={{ textDecoration: 'none' }}>
-                                <AgButton 
-                                    variant="outline" 
-                                    className="nav-login-btn" 
+                            <>
+                                <button
+                                    className="ag-button ag-button--outline"
+                                    onClick={handleLogout}
                                     style={{ padding: '0.5rem 1.5rem', fontSize: '0.9rem' }}
                                 >
-                                    Login
-                                </AgButton>
-                            </Link>
+                                    Logout
+                                </button>
+                                
+                                {/* Animated Cart Badge */}
+                                <CartBadge />
+                            </>
+                        ) : (
+                            <>
+                                <Link to="/login" style={{ textDecoration: 'none' }}>
+                                    <button
+                                        className="ag-button ag-button--outline"
+                                        style={{ padding: '0.5rem 1.5rem', fontSize: '0.9rem' }}
+                                    >
+                                        Login
+                                    </button>
+                                </Link>
+                                <span className="ag-nav-icon">🛒</span>
+                            </>
                         )}
-                        
-                        <span className="ag-nav-icon">🛒</span>
                     </div>
                 </div>
-            </AgContainer>
+            </div>
         </nav>
     );
 };
