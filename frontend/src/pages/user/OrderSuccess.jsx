@@ -7,7 +7,7 @@ import confetti from 'canvas-confetti';
 export default function OrderSuccess() {
     const location = useLocation();
     const navigate = useNavigate();
-    const { orderId, paymentId } = location.state || {};
+    const { orderId, paymentId, paymentMethod } = location.state || {};
 
     useEffect(() => {
         // Trigger confetti animation
@@ -46,6 +46,35 @@ export default function OrderSuccess() {
         return null;
     }
 
+    // Determine payment method display
+    const getPaymentMethodInfo = () => {
+        switch(paymentMethod) {
+            case 'cod':
+                return {
+                    icon: '💵',
+                    title: 'Order Placed Successfully!',
+                    subtitle: 'Cash on Delivery',
+                    message: 'Please keep exact cash ready when our delivery partner arrives.'
+                };
+            case 'razorpay':
+                return {
+                    icon: '✅',
+                    title: 'Payment Successful!',
+                    subtitle: 'Paid via Online Payment',
+                    message: 'Your payment has been confirmed. We\'re preparing your order!'
+                };
+            default:
+                return {
+                    icon: '🎉',
+                    title: 'Order Placed Successfully!',
+                    subtitle: 'Order Confirmed',
+                    message: 'Thank you for your order! We\'ll get back to you shortly.'
+                };
+        }
+    };
+
+    const paymentInfo = getPaymentMethodInfo();
+
     return (
         <AgContainer>
             <div style={{
@@ -71,7 +100,7 @@ export default function OrderSuccess() {
                         marginBottom: '2rem'
                     }}
                 >
-                    🎉
+                    {paymentInfo.icon}
                 </motion.div>
 
                 <motion.div
@@ -93,23 +122,37 @@ export default function OrderSuccess() {
                         style={{
                             fontSize: '2.5rem',
                             color: 'var(--primary-romantic)',
-                            marginBottom: '1rem'
+                            marginBottom: '0.5rem'
                         }}
                     >
-                        Order Placed Successfully!
+                        {paymentInfo.title}
                     </motion.h1>
+
+                    <motion.p
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.6 }}
+                        style={{
+                            fontSize: '1rem',
+                            color: 'var(--text-light)',
+                            marginBottom: '1rem',
+                            fontWeight: '600'
+                        }}
+                    >
+                        {paymentInfo.subtitle}
+                    </motion.p>
 
                     <motion.p
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.7 }}
                         style={{
-                            fontSize: '1.1rem',
+                            fontSize: '1rem',
                             color: 'var(--text-light)',
                             marginBottom: '2rem'
                         }}
                     >
-                        Thank you for your purchase! Your order has been confirmed.
+                        {paymentInfo.message}
                     </motion.p>
 
                     <motion.div
@@ -123,7 +166,7 @@ export default function OrderSuccess() {
                             marginBottom: '2rem'
                         }}
                     >
-                        <div style={{ marginBottom: '1rem' }}>
+                        <div style={{ marginBottom: paymentId ? '1rem' : 0 }}>
                             <span style={{ 
                                 color: 'var(--text-light)', 
                                 fontSize: '0.9rem',
@@ -163,22 +206,43 @@ export default function OrderSuccess() {
                         )}
                     </motion.div>
 
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 1.1 }}
-                        style={{
-                            backgroundColor: '#f0fdf4',
-                            border: '1px solid #86efac',
-                            borderRadius: '8px',
-                            padding: '1rem',
-                            marginBottom: '2rem'
-                        }}
-                    >
-                        <p style={{ margin: 0, fontSize: '0.9rem', color: '#166534' }}>
-                            ✅ A confirmation email has been sent to your registered email address
-                        </p>
-                    </motion.div>
+                    {/* Different messages based on payment method */}
+                    {paymentMethod === 'cod' ? (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 1.1 }}
+                            style={{
+                                backgroundColor: '#fef3c7',
+                                border: '1px solid #fbbf24',
+                                borderRadius: '8px',
+                                padding: '1rem',
+                                marginBottom: '2rem'
+                            }}
+                        >
+                            <p style={{ margin: 0, fontSize: '0.9rem', color: '#92400e' }}>
+                                💵 <strong>Cash on Delivery:</strong> Please keep ₹{' '}
+                                <span style={{ fontWeight: 'bold' }}>[TOTAL AMOUNT]</span> ready in cash
+                            </p>
+                        </motion.div>
+                    ) : (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 1.1 }}
+                            style={{
+                                backgroundColor: '#f0fdf4',
+                                border: '1px solid #86efac',
+                                borderRadius: '8px',
+                                padding: '1rem',
+                                marginBottom: '2rem'
+                            }}
+                        >
+                            <p style={{ margin: 0, fontSize: '0.9rem', color: '#166534' }}>
+                                ✅ A confirmation email has been sent to your registered email address
+                            </p>
+                        </motion.div>
+                    )}
 
                     <motion.div
                         initial={{ opacity: 0, y: 10 }}
@@ -216,22 +280,69 @@ export default function OrderSuccess() {
                                 fontWeight: '600'
                             }}
                         >
-                            View My Orders
+                            Track My Order
                         </button>
                     </motion.div>
+                </motion.div>
+
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 1.5 }}
+                    style={{
+                        marginTop: '2rem',
+                        backgroundColor: 'white',
+                        padding: '1.5rem',
+                        borderRadius: '12px',
+                        maxWidth: '600px',
+                        width: '100%'
+                    }}
+                >
+                    <h3 style={{ marginBottom: '1rem', fontSize: '1.2rem' }}>
+                        What happens next?
+                    </h3>
+                    <div style={{ textAlign: 'left' }}>
+                        <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+                            <span style={{ fontSize: '1.5rem' }}>📧</span>
+                            <div>
+                                <strong>Order Confirmation</strong>
+                                <p style={{ margin: '0.25rem 0 0 0', color: 'var(--text-light)', fontSize: '0.9rem' }}>
+                                    You'll receive an email with order details
+                                </p>
+                            </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+                            <span style={{ fontSize: '1.5rem' }}>📦</span>
+                            <div>
+                                <strong>Order Processing</strong>
+                                <p style={{ margin: '0.25rem 0 0 0', color: 'var(--text-light)', fontSize: '0.9rem' }}>
+                                    We'll prepare your items for shipment
+                                </p>
+                            </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '1rem' }}>
+                            <span style={{ fontSize: '1.5rem' }}>🚚</span>
+                            <div>
+                                <strong>Delivery</strong>
+                                <p style={{ margin: '0.25rem 0 0 0', color: 'var(--text-light)', fontSize: '0.9rem' }}>
+                                    Your order will be delivered within 3-5 business days
+                                </p>
+                            </div>
+                        </div>
+                    </div>
                 </motion.div>
 
                 <motion.p
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    transition={{ delay: 1.5 }}
+                    transition={{ delay: 1.7 }}
                     style={{
                         marginTop: '2rem',
                         color: 'var(--text-light)',
                         fontSize: '0.9rem'
                     }}
                 >
-                    Need help? Contact us at support@softwrapstudio.com
+                    Need help? Contact us at support@softwrapstudio.com or WhatsApp us
                 </motion.p>
             </div>
         </AgContainer>

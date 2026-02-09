@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../../utils/CartContext.jsx';
 import { useAuth } from '../../utils/useAuth.jsx';
 import { supabase } from '../../utils/supabase';
 import { AgContainer, AgButton } from '../../components/AgComponents';
+
+// WhatsApp Business Number - Update this with your number
+const WHATSAPP_BUSINESS_NUMBER = '919876543210'; // Format: country code + number (no + or spaces)
 
 export default function Payment() {
     const navigate = useNavigate();
@@ -13,6 +16,7 @@ export default function Payment() {
     const [shippingInfo, setShippingInfo] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('razorpay'); // razorpay, cod, whatsapp
 
     useEffect(() => {
         // Load shipping info from localStorage
@@ -42,19 +46,22 @@ export default function Payment() {
         );
     }
 
-    const shippingCost = getCartTotal() >= 999 ? 0 : 50;
-    const totalAmount = getCartTotal() + shippingCost;
+    const baseShippingCost = getCartTotal() >= 999 ? 0 : 50;
+    const codFee = selectedPaymentMethod === 'cod' ? 60 : 0;
+    const totalShippingCost = baseShippingCost + codFee;
+    const totalAmount = getCartTotal() + totalShippingCost;
 
-    const handleRazorpayPayment = async () => {
+    // Handle Cash on Delivery
+    const handleCODOrder = async () => {
         setLoading(true);
         setError(null);
 
         try {
-            // Step 1: Create order in Supabase
+            // Create order in Supabase
             const orderData = {
                 user_id: user.id,
                 total_amount: totalAmount,
-                shipping_cost: shippingCost,
+                shipping_cost: totalShippingCost,
                 items: cart.map(item => ({
                     product_id: item.id,
                     title: item.title || item.name,
@@ -63,7 +70,8 @@ export default function Payment() {
                 })),
                 shipping_address: shippingInfo,
                 status: 'pending',
-                payment_status: 'pending'
+                payment_status: 'cod',
+                payment_method: 'Cash on Delivery'
             };
 
             const { data: order, error: orderError } = await supabase
@@ -74,14 +82,111 @@ export default function Payment() {
 
             if (orderError) throw orderError;
 
-            // Step 2: Initialize Razorpay
+            // Reduce stock for each item
+            for (const item of cart) {
+                await supabase.rpc('reduce_product_stock', {
+                    product_id: item.id,
+                    quantity: item.quantity
+                });
+            }
+
+            // Clear cart
+            clearCart();
+            localStorage.removeItem('shippingInfo');
+
+            // Redirect to success page
+            navigate('/order-success', { 
+                state: { 
+                    orderId: order.id,
+                    paymentMethod: 'cod'
+                } 
+            });
+        } catch (err) {
+            console.error('COD order error:', err);
+            setError(err.message || 'Failed to place order. Please try again.');
+            setLoading(false);
+        }
+    };
+
+    // Handle WhatsApp Business Redirect
+    const handleWhatsAppOrder = () => {
+        // Create order message
+        const orderMessage = `
+🛍️ *New Order Request*
+
+📦 *Order Details:*
+${cart.map((item, index) => 
+    `${index + 1}. ${item.title || item.name} - ₹${item.price} x ${item.quantity} = ₹${(parseFloat(item.price) * item.quantity).toFixed(2)}`
+).join('\n')}
+
+💰 *Subtotal:* ₹${getCartTotal().toFixed(2)}
+🚚 *Shipping:* ₹${totalShippingCost.toFixed(2)}
+💳 *Total Amount:* ₹${totalAmount.toFixed(2)}
+
+📍 *Delivery Address:*
+${shippingInfo.fullName}
+${shippingInfo.address}
+${shippingInfo.city}, ${shippingInfo.state} - ${shippingInfo.pincode}
+📞 ${shippingInfo.phone}
+📧 ${shippingInfo.email}
+
+${shippingInfo.notes ? `📝 *Notes:* ${shippingInfo.notes}` : ''}
+
+I'd like to confirm this order and discuss payment options.
+        `.trim();
+
+        // Encode message for URL
+        const encodedMessage = encodeURIComponent(orderMessage);
+        
+        // Create WhatsApp URL
+        const whatsappUrl = `https://wa.me/${WHATSAPP_BUSINESS_NUMBER}?text=${encodedMessage}`;
+        
+        // Open WhatsApp in new tab
+        window.open(whatsappUrl, '_blank');
+        
+        // Show confirmation message
+        alert('Redirecting to WhatsApp Business! We will confirm your order shortly.');
+    };
+
+    // Handle Razorpay Payment
+    const handleRazorpayPayment = async () => {
+        setLoading(true);
+        setError(null);
+
+        try {
+            // Create order in Supabase
+            const orderData = {
+                user_id: user.id,
+                total_amount: totalAmount,
+                shipping_cost: totalShippingCost,
+                items: cart.map(item => ({
+                    product_id: item.id,
+                    title: item.title || item.name,
+                    price: parseFloat(item.price),
+                    quantity: item.quantity
+                })),
+                shipping_address: shippingInfo,
+                status: 'pending',
+                payment_status: 'pending',
+                payment_method: 'Razorpay'
+            };
+
+            const { data: order, error: orderError } = await supabase
+                .from('orders')
+                .insert([orderData])
+                .select()
+                .single();
+
+            if (orderError) throw orderError;
+
+            // Initialize Razorpay
             const options = {
-                key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_YOUR_KEY_HERE', // Replace with your Razorpay key
+                key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_YOUR_KEY_HERE',
                 amount: Math.round(totalAmount * 100), // Amount in paise
                 currency: 'INR',
                 name: 'Softwrap Studio',
                 description: 'Order Payment',
-                order_id: order.id, // This will be the Razorpay order ID from backend
+                order_id: order.id,
                 prefill: {
                     name: shippingInfo.fullName,
                     email: shippingInfo.email,
@@ -92,10 +197,9 @@ export default function Payment() {
                     address: shippingInfo.address
                 },
                 theme: {
-                    color: '#e11d48' // Your primary color
+                    color: '#e11d48'
                 },
                 handler: async function (response) {
-                    // Payment successful
                     try {
                         // Update order status
                         const { error: updateError } = await supabase
@@ -111,7 +215,7 @@ export default function Payment() {
 
                         if (updateError) throw updateError;
 
-                        // Reduce stock for each item
+                        // Reduce stock
                         for (const item of cart) {
                             await supabase.rpc('reduce_product_stock', {
                                 product_id: item.id,
@@ -119,15 +223,14 @@ export default function Payment() {
                             });
                         }
 
-                        // Clear cart
                         clearCart();
                         localStorage.removeItem('shippingInfo');
 
-                        // Redirect to success page
                         navigate('/order-success', { 
                             state: { 
                                 orderId: order.id,
-                                paymentId: response.razorpay_payment_id 
+                                paymentId: response.razorpay_payment_id,
+                                paymentMethod: 'razorpay'
                             } 
                         });
                     } catch (err) {
@@ -151,6 +254,22 @@ export default function Payment() {
             console.error('Payment error:', err);
             setError(err.message || 'Payment failed. Please try again.');
             setLoading(false);
+        }
+    };
+
+    const handlePayment = () => {
+        switch (selectedPaymentMethod) {
+            case 'razorpay':
+                handleRazorpayPayment();
+                break;
+            case 'cod':
+                handleCODOrder();
+                break;
+            case 'whatsapp':
+                handleWhatsAppOrder();
+                break;
+            default:
+                setError('Please select a payment method');
         }
     };
 
@@ -202,37 +321,218 @@ export default function Payment() {
                             boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
                         }}
                     >
-                        <h2 style={{ marginBottom: '1.5rem' }}>Payment Method</h2>
+                        <h2 style={{ marginBottom: '1.5rem' }}>Choose Payment Method</h2>
 
                         {error && (
-                            <div style={{
-                                backgroundColor: '#fee',
-                                color: '#c33',
-                                padding: '1rem',
-                                borderRadius: '8px',
-                                marginBottom: '1.5rem'
-                            }}>
+                            <motion.div
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                style={{
+                                    backgroundColor: '#fee',
+                                    color: '#c33',
+                                    padding: '1rem',
+                                    borderRadius: '8px',
+                                    marginBottom: '1.5rem'
+                                }}
+                            >
                                 {error}
-                            </div>
+                            </motion.div>
                         )}
 
-                        {/* Razorpay Option */}
-                        <div style={{
-                            border: '2px solid var(--primary-romantic)',
-                            borderRadius: '12px',
-                            padding: '1.5rem',
-                            marginBottom: '1.5rem',
-                            backgroundColor: 'var(--primary-soft)'
-                        }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                <div style={{ fontSize: '2rem' }}>💳</div>
-                                <div>
-                                    <h3 style={{ margin: '0 0 0.5rem 0' }}>Razorpay</h3>
-                                    <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-light)' }}>
-                                        Pay securely with Cards, UPI, Netbanking & Wallets
-                                    </p>
+                        {/* Payment Method Options */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem' }}>
+                            
+                            {/* Razorpay Option */}
+                            <motion.div
+                                whileHover={{ scale: 1.02 }}
+                                onClick={() => setSelectedPaymentMethod('razorpay')}
+                                style={{
+                                    border: selectedPaymentMethod === 'razorpay' 
+                                        ? '3px solid var(--primary-romantic)' 
+                                        : '2px solid var(--border-color)',
+                                    borderRadius: '12px',
+                                    padding: '1.5rem',
+                                    cursor: 'pointer',
+                                    backgroundColor: selectedPaymentMethod === 'razorpay' 
+                                        ? 'var(--primary-soft)' 
+                                        : 'white',
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                    <div style={{ 
+                                        fontSize: '2rem',
+                                        width: '50px',
+                                        height: '50px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        backgroundColor: 'white',
+                                        borderRadius: '8px'
+                                    }}>
+                                        💳
+                                    </div>
+                                    <div style={{ flex: 1 }}>
+                                        <h3 style={{ margin: '0 0 0.25rem 0' }}>
+                                            Online Payment
+                                        </h3>
+                                        <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-light)' }}>
+                                            Cards, UPI, Netbanking & Wallets
+                                        </p>
+                                        <p style={{ 
+                                            margin: '0.5rem 0 0 0', 
+                                            fontSize: '0.85rem', 
+                                            color: '#10b981',
+                                            fontWeight: '500'
+                                        }}>
+                                            ✓ Instant confirmation • Secure payment
+                                        </p>
+                                    </div>
+                                    {selectedPaymentMethod === 'razorpay' && (
+                                        <div style={{ 
+                                            width: '24px', 
+                                            height: '24px', 
+                                            borderRadius: '50%',
+                                            backgroundColor: 'var(--primary-romantic)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            color: 'white',
+                                            fontSize: '0.9rem'
+                                        }}>
+                                            ✓
+                                        </div>
+                                    )}
                                 </div>
-                            </div>
+                            </motion.div>
+
+                            {/* Cash on Delivery Option */}
+                            <motion.div
+                                whileHover={{ scale: 1.02 }}
+                                onClick={() => setSelectedPaymentMethod('cod')}
+                                style={{
+                                    border: selectedPaymentMethod === 'cod' 
+                                        ? '3px solid var(--primary-romantic)' 
+                                        : '2px solid var(--border-color)',
+                                    borderRadius: '12px',
+                                    padding: '1.5rem',
+                                    cursor: 'pointer',
+                                    backgroundColor: selectedPaymentMethod === 'cod' 
+                                        ? 'var(--primary-soft)' 
+                                        : 'white',
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                    <div style={{ 
+                                        fontSize: '2rem',
+                                        width: '50px',
+                                        height: '50px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        backgroundColor: 'white',
+                                        borderRadius: '8px'
+                                    }}>
+                                        💵
+                                    </div>
+                                    <div style={{ flex: 1 }}>
+                                        <h3 style={{ margin: '0 0 0.25rem 0' }}>
+                                            Cash on Delivery
+                                        </h3>
+                                        <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-light)' }}>
+                                            Pay when you receive your order
+                                        </p>
+                                        <p style={{ 
+                                            margin: '0.5rem 0 0 0', 
+                                            fontSize: '0.85rem', 
+                                            color: '#f59e0b',
+                                            fontWeight: '500'
+                                        }}>
+                                            + ₹60 COD handling fee
+                                        </p>
+                                    </div>
+                                    {selectedPaymentMethod === 'cod' && (
+                                        <div style={{ 
+                                            width: '24px', 
+                                            height: '24px', 
+                                            borderRadius: '50%',
+                                            backgroundColor: 'var(--primary-romantic)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            color: 'white',
+                                            fontSize: '0.9rem'
+                                        }}>
+                                            ✓
+                                        </div>
+                                    )}
+                                </div>
+                            </motion.div>
+
+                            {/* WhatsApp Business Option */}
+                            <motion.div
+                                whileHover={{ scale: 1.02 }}
+                                onClick={() => setSelectedPaymentMethod('whatsapp')}
+                                style={{
+                                    border: selectedPaymentMethod === 'whatsapp' 
+                                        ? '3px solid var(--primary-romantic)' 
+                                        : '2px solid var(--border-color)',
+                                    borderRadius: '12px',
+                                    padding: '1.5rem',
+                                    cursor: 'pointer',
+                                    backgroundColor: selectedPaymentMethod === 'whatsapp' 
+                                        ? 'var(--primary-soft)' 
+                                        : 'white',
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                    <div style={{ 
+                                        fontSize: '2rem',
+                                        width: '50px',
+                                        height: '50px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        backgroundColor: '#25D366',
+                                        borderRadius: '8px'
+                                    }}>
+                                        💬
+                                    </div>
+                                    <div style={{ flex: 1 }}>
+                                        <h3 style={{ margin: '0 0 0.25rem 0' }}>
+                                            Order via WhatsApp
+                                        </h3>
+                                        <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-light)' }}>
+                                            Chat with us to confirm order & payment
+                                        </p>
+                                        <p style={{ 
+                                            margin: '0.5rem 0 0 0', 
+                                            fontSize: '0.85rem', 
+                                            color: '#25D366',
+                                            fontWeight: '500'
+                                        }}>
+                                            ✓ Personal service • Flexible payment
+                                        </p>
+                                    </div>
+                                    {selectedPaymentMethod === 'whatsapp' && (
+                                        <div style={{ 
+                                            width: '24px', 
+                                            height: '24px', 
+                                            borderRadius: '50%',
+                                            backgroundColor: 'var(--primary-romantic)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            color: 'white',
+                                            fontSize: '0.9rem'
+                                        }}>
+                                            ✓
+                                        </div>
+                                    )}
+                                </div>
+                            </motion.div>
                         </div>
 
                         {/* Shipping Address */}
@@ -267,20 +567,36 @@ export default function Payment() {
                             </button>
                         </div>
 
-                        {/* Pay Button */}
-                        <AgButton
-                            variant="primary"
-                            onClick={handleRazorpayPayment}
-                            disabled={loading}
-                            style={{
-                                width: '100%',
-                                padding: '1.25rem',
-                                fontSize: '1.2rem',
-                                fontWeight: 'bold'
-                            }}
-                        >
-                            {loading ? 'Processing...' : `Pay ₹${totalAmount.toFixed(2)}`}
-                        </AgButton>
+                        {/* Payment Button */}
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key={selectedPaymentMethod}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                            >
+                                <AgButton
+                                    variant="primary"
+                                    onClick={handlePayment}
+                                    disabled={loading}
+                                    style={{
+                                        width: '100%',
+                                        padding: '1.25rem',
+                                        fontSize: '1.2rem',
+                                        fontWeight: 'bold',
+                                        backgroundColor: selectedPaymentMethod === 'whatsapp' 
+                                            ? '#25D366' 
+                                            : undefined
+                                    }}
+                                >
+                                    {loading ? 'Processing...' : 
+                                     selectedPaymentMethod === 'razorpay' ? `Pay ₹${totalAmount.toFixed(2)}` :
+                                     selectedPaymentMethod === 'cod' ? `Place COD Order - ₹${totalAmount.toFixed(2)}` :
+                                     selectedPaymentMethod === 'whatsapp' ? '💬 Continue on WhatsApp' :
+                                     'Select Payment Method'}
+                                </AgButton>
+                            </motion.div>
+                        </AnimatePresence>
 
                         <div style={{
                             marginTop: '1rem',
@@ -288,7 +604,7 @@ export default function Payment() {
                             fontSize: '0.85rem',
                             color: 'var(--text-light)'
                         }}>
-                            🔒 Your payment information is secure and encrypted
+                            🔒 Your information is secure and encrypted
                         </div>
                     </motion.div>
 
@@ -384,10 +700,29 @@ export default function Payment() {
                                 marginBottom: '0.5rem'
                             }}>
                                 <span>Shipping:</span>
-                                <span style={{ color: shippingCost === 0 ? '#10b981' : 'inherit' }}>
-                                    {shippingCost === 0 ? 'FREE' : `₹${shippingCost.toFixed(2)}`}
+                                <span style={{ color: baseShippingCost === 0 ? '#10b981' : 'inherit' }}>
+                                    {baseShippingCost === 0 ? 'FREE' : `₹${baseShippingCost.toFixed(2)}`}
                                 </span>
                             </div>
+                            
+                            <AnimatePresence>
+                                {selectedPaymentMethod === 'cod' && (
+                                    <motion.div
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: 'auto' }}
+                                        exit={{ opacity: 0, height: 0 }}
+                                        style={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            marginBottom: '0.5rem',
+                                            color: '#f59e0b'
+                                        }}
+                                    >
+                                        <span>COD Fee:</span>
+                                        <span>₹{codFee.toFixed(2)}</span>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
                         </div>
 
                         <div style={{
